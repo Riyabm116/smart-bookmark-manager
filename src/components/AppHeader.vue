@@ -3,18 +3,19 @@
     <div class="logo">
       <h1>Smart Bookmark Manager</h1>
     </div>
-    <!-- Controls for Dark Mode Toggle and Search -->
     <div class="controls">
-      <!-- Search Input -->
       <input 
-        v-model="searchQuery" 
+        :value="searchQuery"
+        @input="$emit('update:searchQuery', $event.target.value)" 
         class="search-bar"
         type="text" 
         placeholder="Search Bookmarks" 
       />
+
       <button @click="searchBookmarks" class="search-btn">Search</button>
+
+      <button @click="toggleForm" class="add-bookmark-btn">+</button>
       
-      <!-- Toggle Mode Button -->
       <button @click="toggleMode" class="mode-toggle-btn">
         {{ mode === 'light' ? 'Dark Mode' : 'Light Mode' }}
       </button>
@@ -23,30 +24,34 @@
 </template>
 
 <script>
-import { ref } from 'vue'; // <-- Add this line
-
 export default {
   props: {
-    mode: String,  
+    mode: String,
+    searchQuery: String, 
+    bookmarks: Array, 
   },
-  emits: ['toggle-mode'],  
+  emits: ['toggle-mode', 'toggle-form', 'update:searchQuery'],
   setup(props, { emit }) {
-    const searchQuery = ref('');
-    
-    const toggleMode = () => {
-      emit('toggle-mode');
-    };
-
     const searchBookmarks = () => {
-      // Add functionality to search bookmarks
-      console.log(searchQuery.value);
+      if (!Array.isArray(props.bookmarks)) {
+        console.error('Bookmarks are not defined or not an array');
+        return;
+      }
+      if (props.searchQuery.trim() === '') {
+        console.log('Search query is empty');
+      } else {
+        const filteredBookmarks = props.bookmarks.filter(bookmark => 
+          bookmark.title.toLowerCase().includes(props.searchQuery.toLowerCase()) ||
+          bookmark.url.toLowerCase().includes(props.searchQuery.toLowerCase())
+        );
+        console.log('Filtered Bookmarks:', filteredBookmarks);
+      }
     };
 
-    return { 
-      toggleMode, 
-      searchQuery, 
-      searchBookmarks 
-    };
+    const toggleMode = () => emit('toggle-mode');
+    const toggleForm = () => emit('toggle-form');
+
+    return { searchBookmarks, toggleMode, toggleForm };
   }
 };
 </script>
@@ -110,5 +115,20 @@ header.dark {
 
 .mode-toggle-btn:hover {
   background-color: #0056c1;
+}
+
+.add-bookmark-btn {
+  padding: 8px 15px;
+  font-size: 18px;
+  font-weight: bold;
+  background-color: #28a745;
+  color: white;
+  border: none;
+  border-radius: 50%;
+  cursor: pointer;
+}
+
+.add-bookmark-btn:hover {
+  background-color: #218838;
 }
 </style>
